@@ -8,16 +8,27 @@
 Convolutional Neural Networks (CNNs) are often used in imaging-related applications since the convolution layers emulate the way visual cortex of humans processes vision - by extracting information from local regions. By stacking convolution layers, we attempt to extract higher and higher level of information from the given image - edges/curves, then shapes, etc.. Max pooling layers (and other variations) are also used to improve performance by avoiding overfitting. While its success in image classification is renowned in visual recognition challenges, the traditional CNN architecture lacks the ability of determining positions in objects in the images. In particular, the Fully-Connected Layers, usually placed at the end of the network, remove spatial information that is essential for locating objects.
 
 #### Fully Convolutional Network
+
+##### 1x1 Convolution Layers
 To preserve spatial information, as well as to keep the non-linearity of the network, we can replace the Fully-Connected Layers with 1x1 Convolution Layers. There are 2 additional advantages in doing this: one, we can feed images of any size into the resulting trained network, and two, we can easily increase and decrease the complexity of the most compact (usually) representation by varying the number of 1x1 filters.
 
+Disadvantages for these layers include the loss of flexibility since they have less parameters to be learned, which may affect some highly complex environments and applications. Also, pre-trained models that solely rely on Convolution Layers are likely to be computationally slower than similar networks that make use of Fully-Connected Layers.
+
+#### Encoding and decoding images
+With a typical CNN, we are able to encode input images into a spatially-shrunk representation by reducing the height and width with each added layer. As the height and width decreases, it extracts higher and higher level of information from the given image. With the above-mentioned 1x1 convolution layers, the resulting representation maintains some spatial information which we can make use of in predictions.
+
+To be able to annotate pixels of the given image with their classification, we can attempt to decode this encoded information through the use of decoder blocks. In these decoder blocks, we attempt to restore the spatial size (gradually, to original input size) by performing bilinear upsampling. We also use skip connections to include lower-level information from prior layers which improves accuracy of pixel classification. In addition, we can include some convolution layers in the decoder blocks to continue extract information from prior layers which may have been missed out earlier.
+
+##### Bilinear Upsampling
 To make use of the kept spatial information, we make use of bilinear upsampling to predict pixel probabilities. This requires less overall training, as compared to traditional transpose convolutions, since the bilinear upsampling is just linear interpolations of values.
 
+##### Skip Connections
 Another powerful tweak we can make to the network is through the use of skip connections. In essence, this means combining the high-level and low-level information to make spatial predictions more robust and accurate. This is done in this project by concatenating a prior layer that has the same height and width, and then perform convolution on this resulting layer.
 
-#### Batch normalization
+##### Batch normalization
 To optimize network training, we can also make use of batch normalization, which is to normalize the input batch at each layer. This allows us to mitigate vanishing gradient to some extent, as well as provide some level of regularization.
 
-#### Depthwise Separable Convolutions
+##### Depthwise Separable Convolutions
 Instead of the traditional convolution layers, we can instead make use of separable convolution layers. What the layer does is to perform convolution on each of the input channels, and then apply 1x1 convolutions to the result. The advantage is that it uses less parameters which enables fast computation, both in learning and evaluation.
 
 ### Hyperparameters
